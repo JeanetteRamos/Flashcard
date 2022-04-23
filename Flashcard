@@ -1,0 +1,71 @@
+const path = require('path');
+const webpack = require('webpack');
+const svgrLoader = require.resolve('@svgr/webpack');
+module.exports = {
+    mode: "production",
+    entry: './src/index.ts',
+    output: {
+        filename: 'index.js',
+        path: path.resolve(__dirname, 'dist'),
+        libraryTarget: 'umd',
+        clean: true
+    },
+    devtool: 'source-map',
+    resolve: {
+        extensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
+        modules: ['node_modules']
+    },
+    externals: {
+        react: "react"
+    },
+    module: {
+        rules: [
+            {
+                test: /\.(ts|tsx)?$/,
+                use:['ts-loader'],
+                exclude: /node_modules/
+            },
+            {
+                test: /\.(css|s[ac]ss)$/i,
+                use: ['style-loader', 'css-loader', 'postcss-loader'],
+            },
+            {
+                test: /\.svg$/i,
+                type: 'asset',
+                resourceQuery: /url/, // *.svg?url
+            },
+            {
+                test: /\.svg$/i,
+                issuer: /\.[jt]sx?$/,
+                resourceQuery: {not: [/url/]}, // exclude react component if *.svg?url
+                use: [
+                    {
+                        loader: svgrLoader, options: {
+                            svgoConfig: {
+                                plugins: [
+                                    {
+                                        name: 'removeViewBox',
+                                        active: false
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                ]
+            },
+            {
+                test: /\.(woff(2)?|eot|ttf|otf|)$/,
+                type: 'asset/inline',
+            },
+            {
+                test: /\.(?:ico|gif|png|jpg|jpeg|)$/i,
+                type: 'asset/resource',
+            },
+        ],
+    },
+    plugins: [
+        new webpack.ProvidePlugin({
+            FroalaEditor: 'file_name'
+        })
+    ]
+};
